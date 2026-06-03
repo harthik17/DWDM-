@@ -226,8 +226,8 @@ def train_models():
         r2 = r2_score(y_test, predictions)
         accuracy_percentage = max(0, min(100, r2 * 100))
 
-        model_file = MODEL_DIR / f"{clean_column_name(model_name)}.pkl"
-        joblib.dump(model, model_file)
+        # model_file = MODEL_DIR / f"{clean_column_name(model_name)}.pkl"
+# joblib.dump(model, model_file)
 
         metrics.append(
             {
@@ -244,19 +244,18 @@ def train_models():
             best_model = model
             best_model_name = model_name
 
-    joblib.dump(best_model, BEST_MODEL_PATH)
-    METADATA_PATH.write_text(
-        json.dumps(
-            {
-                "best_model_name": best_model_name,
-                "features": ["quantity", "discount", "profit"],
-                "target": "sales",
-                "metrics": metrics,
-            },
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
+    # METADATA_PATH.write_text(
+#     json.dumps(
+#         {
+#             "best_model_name": best_model_name,
+#             "features": ["quantity", "discount", "profit"],
+#             "target": "sales",
+#             "metrics": metrics,
+#         },
+#         indent=2,
+#     ),
+#     encoding="utf-8",
+# )
 
     try:
         save_model_metrics(metrics)
