@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports | Sales Prediction DWDM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="topbar">
+        <a class="topbar-brand" href="{{ url_for('dashboard') }}"><span>DW</span> Sales Prediction</a>
+        <div class="topbar-links">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('prediction') }}">Prediction</a>
+            <a href="{{ url_for('reports') }}" class="active">Reports</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </nav>
+
+    <main class="page-shell">
+        <header class="page-header">
+            <div>
+                <p class="eyebrow">CSV exports and Matplotlib reports</p>
+                <h1>Reports Section</h1>
+                <p class="page-subtitle">Download warehouse records, prediction history, and summarized analytics reports.</p>
+            </div>
+            <div class="report-actions">
+                <a class="btn btn-primary" href="{{ url_for('download_analytics_report') }}">Download Analytics Report</a>
+                <a class="btn btn-outline-secondary" href="{{ url_for('export_sales_csv') }}">Export Sales CSV</a>
+                <a class="btn btn-outline-secondary" href="{{ url_for('export_predictions_csv') }}">Export Predictions CSV</a>
+            </div>
+        </header>
+
+        <section class="metric-grid">
+            <article class="metric-card">
+                <span>Warehouse Records</span>
+                <strong>{{ analytics.kpis.record_count }}</strong>
+            </article>
+            <article class="metric-card">
+                <span>Total Sales</span>
+                <strong>${{ "%.2f"|format(analytics.kpis.total_sales) }}</strong>
+            </article>
+            <article class="metric-card">
+                <span>Total Profit</span>
+                <strong>${{ "%.2f"|format(analytics.kpis.total_profit) }}</strong>
+            </article>
+            <article class="metric-card">
+                <span>Total Orders</span>
+                <strong>{{ analytics.kpis.total_orders }}</strong>
+            </article>
+        </section>
+
+        <section class="report-grid">
+            <article class="report-panel">
+                <h2>Model Accuracy Comparison</h2>
+                <img src="{{ url_for('static', filename='images/model_comparison.png') }}" alt="Model comparison chart">
+            </article>
+            <article class="report-panel">
+                <h2>Monthly Sales and Profit</h2>
+                <img src="{{ url_for('static', filename='images/monthly_sales_report.png') }}" alt="Monthly sales report">
+            </article>
+            <article class="report-panel">
+                <h2>Category Profit Report</h2>
+                <img src="{{ url_for('static', filename='images/category_profit_report.png') }}" alt="Category profit report">
+            </article>
+        </section>
+
+        <section class="data-section">
+            <div class="panel-heading">
+                <h2>Algorithm Results</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>MAE</th>
+                            <th>RMSE</th>
+                            <th>R2 Score</th>
+                            <th>Accuracy</th>
+                            <th>Trained At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for metric in metrics %}
+                        <tr>
+                            <td>{{ metric.model_name }}</td>
+                            <td>{{ metric.mae }}</td>
+                            <td>{{ metric.rmse }}</td>
+                            <td>{{ metric.r2_score }}</td>
+                            <td><strong>{{ metric.accuracy_percentage }}%</strong></td>
+                            <td>{{ metric.trained_at }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="data-section">
+            <div class="panel-heading">
+                <h2>Recent Predictions</h2>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Quantity</th>
+                            <th>Discount</th>
+                            <th>Profit</th>
+                            <th>Model</th>
+                            <th>Predicted Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in prediction_history %}
+                        <tr>
+                            <td>{{ row.full_name }}</td>
+                            <td>{{ row.quantity }}</td>
+                            <td>{{ row.discount }}</td>
+                            <td>${{ row.profit }}</td>
+                            <td>{{ row.model_name }}</td>
+                            <td><strong>${{ row.predicted_sales }}</strong></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="empty-cell">No prediction history available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

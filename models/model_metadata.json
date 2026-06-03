@@ -1,0 +1,32 @@
+{
+  "best_model_name": "Random Forest Regressor",
+  "features": [
+    "quantity",
+    "discount",
+    "profit"
+  ],
+  "target": "sales",
+  "metrics": [
+    {
+      "model_name": "Linear Regression",
+      "mae": 245.0756,
+      "rmse": 824.85,
+      "r2_score": -0.151817,
+      "accuracy_percentage": 0.0
+    },
+    {
+      "model_name": "Decision Tree Regressor",
+      "mae": 124.3547,
+      "rmse": 555.8932,
+      "r2_score": 0.476862,
+      "accuracy_percentage": 47.6862
+    },
+    {
+      "model_name": "Random Forest Regressor",
+      "mae": 105.3959,
+      "rmse": 513.4105,
+      "r2_score": 0.553765,
+      "accuracy_percentage": 55.3765
+    }
+  ]
+}
