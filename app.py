@@ -20,7 +20,9 @@ from flask import (
     request,
     session,
     url_for,
+    send_from_directory,
 )
+from pathlib import Path
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from database import (
@@ -133,6 +135,16 @@ def home():
     if session.get("user_id"):
         return redirect(url_for("dashboard"))
     return redirect(url_for("login"))
+
+
+@app.route("/static/images/<filename>")
+def serve_generated_images(filename):
+    from model import STATIC_IMAGE_DIR
+    target_path = Path(STATIC_IMAGE_DIR) / filename
+    if target_path.exists():
+        return send_from_directory(STATIC_IMAGE_DIR, filename)
+    default_static_images_dir = Path(app.root_path) / "static" / "images"
+    return send_from_directory(default_static_images_dir, filename)
 
 
 @app.route("/register", methods=["GET", "POST"])

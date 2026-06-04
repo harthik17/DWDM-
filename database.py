@@ -28,6 +28,27 @@ MYSQL_CONFIG = {
 }
 
 _USE_SQLITE = None
+_SQLITE_PATH = None
+
+def _get_sqlite_db_path():
+    global _SQLITE_PATH
+    if _SQLITE_PATH is None:
+        db_name = "sales_warehouse.db"
+        local_path = os.path.join(os.path.dirname(__file__), db_name)
+        try:
+            if os.path.exists(local_path):
+                with open(local_path, "a"):
+                    pass
+            else:
+                with open(local_path, "w"):
+                    pass
+                os.remove(local_path)
+            _SQLITE_PATH = local_path
+        except Exception:
+            import tempfile
+            _SQLITE_PATH = os.path.join(tempfile.gettempdir(), db_name)
+    return _SQLITE_PATH
+
 
 def use_sqlite():
     global _USE_SQLITE
@@ -45,7 +66,7 @@ def use_sqlite():
             _USE_SQLITE = False
         except Exception:
             _USE_SQLITE = True
-            print("MySQL connection failed/unavailable. Using SQLite fallback (sales_warehouse.db).")
+            print(f"MySQL connection failed/unavailable. Using SQLite fallback ({_get_sqlite_db_path()}).")
     return _USE_SQLITE
 
 
@@ -88,7 +109,7 @@ def create_database_if_needed():
 def get_connection(dictionary=False):
     """Return a database connection for the project."""
     if use_sqlite():
-        conn = sqlite3.connect("sales_warehouse.db")
+        conn = sqlite3.connect(_get_sqlite_db_path())
         if dictionary:
             conn.row_factory = dict_factory
         return conn

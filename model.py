@@ -37,10 +37,39 @@ from database import (
 )
 
 
+import tempfile
+import shutil
+
 BASE_DIR = Path(__file__).resolve().parent
 CSV_PATH = BASE_DIR / "Sample - Superstore.csv"
-MODEL_DIR = BASE_DIR / "models"
-STATIC_IMAGE_DIR = BASE_DIR / "static" / "images"
+
+def get_writable_dir(sub_path):
+    local_path = BASE_DIR / sub_path
+    try:
+        local_path.mkdir(parents=True, exist_ok=True)
+        test_file = local_path / ".write_test"
+        test_file.write_text("test")
+        test_file.unlink()
+        return local_path
+    except Exception:
+        temp_path = Path(tempfile.gettempdir()) / "sales_prediction_capstone" / sub_path
+        temp_path.mkdir(parents=True, exist_ok=True)
+        return temp_path
+
+MODEL_DIR = get_writable_dir("models")
+STATIC_IMAGE_DIR = get_writable_dir("static/images")
+
+# Copy packaged models to writable MODEL_DIR if running from read-only directory
+PACKAGED_MODEL_DIR = BASE_DIR / "models"
+if PACKAGED_MODEL_DIR != MODEL_DIR and PACKAGED_MODEL_DIR.exists():
+    for f in PACKAGED_MODEL_DIR.glob("*"):
+        dest = MODEL_DIR / f.name
+        if not dest.exists():
+            try:
+                shutil.copy2(f, dest)
+            except Exception as e:
+                print(f"Error copying model file {f.name}: {e}")
+
 BEST_MODEL_PATH = MODEL_DIR / "best_sales_model.pkl"
 METADATA_PATH = MODEL_DIR / "model_metadata.json"
 
@@ -226,8 +255,11 @@ def train_models():
         r2 = r2_score(y_test, predictions)
         accuracy_percentage = max(0, min(100, r2 * 100))
 
-        # model_file = MODEL_DIR / f"{clean_column_name(model_name)}.pkl"
-# joblib.dump(model, model_file)
+        model_file = MODEL_DIR / f"{clean_column_name(model_name)}.pkl"
+        try:
+            joblib.dump(model, model_file)
+        except Exception as e:
+            print(f"Error saving model {model_name}: {e}")
 
         metrics.append(
             {
@@ -244,18 +276,27 @@ def train_models():
             best_model = model
             best_model_name = model_name
 
-    # METADATA_PATH.write_text(
-#     json.dumps(
-#         {
-#             "best_model_name": best_model_name,
-#             "features": ["quantity", "discount", "profit"],
-#             "target": "sales",
-#             "metrics": metrics,
-#         },
-#         indent=2,
-#     ),
-#     encoding="utf-8",
-# )
+    if best_model is not None:
+        try:
+            joblib.dump(best_model, BEST_MODEL_PATH)
+        except Exception as e:
+            print(f"Error saving best model: {e}")
+
+    try:
+        METADATA_PATH.write_text(
+            json.dumps(
+                {
+                    "best_model_name": best_model_name,
+                    "features": ["quantity", "discount", "profit"],
+                    "target": "sales",
+                    "metrics": metrics,
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+    except Exception as e:
+        print(f"Error saving model metadata: {e}")
 
     try:
         save_model_metrics(metrics)
